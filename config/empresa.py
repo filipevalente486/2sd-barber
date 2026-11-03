@@ -9,7 +9,7 @@ EMPRESA = {
     "id": 1,
     "nome": "2SD.Barber",
     "tipo_servico": "barbearia",
-    "logo_path": "assets/logo.svg",
+    "logo_path": "assets/logo.png",
 
     "cores": {
         "primaria": "#000000",

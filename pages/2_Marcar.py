@@ -132,32 +132,32 @@ if st.button("✅ Confirmar marcação", use_container_width=True, type="primary
     else:
         cliente_id = criar_ou_atualizar_cliente(nome_input.strip(), telefone_input.strip())
         ref_pendente = st.session_state.get("pending_ref")
-if ref_pendente:
-    if processar_referral(cliente_id, ref_pendente):
-        st.session_state.pop("pending_ref", None)
-        st.info(
-            "🎉 Código de convite aplicado! Quando esta marcação for concluída, "
-            "o teu amigo recebe 3 pontos na campanha **Traz o teu amigo**."
-        )
-        marcacao_id = criar_marcacao(
-            servico_id, cliente_id, data_str, hora_escolhida,
-            int(servico["duracao_min"]),
-        )
+        if ref_pendente:
+            if processar_referral(cliente_id, ref_pendente):
+                st.session_state.pop("pending_ref", None)
+                st.info(
+                    "🎉 Código de convite aplicado! Quando esta marcação for concluída, "
+                    "o teu amigo recebe 3 pontos na campanha **Traz o teu amigo**."
+                )
+                marcacao_id = criar_marcacao(
+                    servico_id, cliente_id, data_str, hora_escolhida,
+                    int(servico["duracao_min"]),
+                )
 
-        st.balloons()
-        st.success(f"✅ Marcação #{marcacao_id} confirmada!")
-        st.markdown(f'''
-        | | |
-        |---|---|
-        | **Serviço** | {servico['nome']} |
-        | **Data** | {DIAS_SEMANA[data_escolhida.weekday()]}, {data_escolhida.strftime('%d/%m/%Y')} |
-        | **Hora** | {hora_escolhida} |
-        | **Preço** | {servico['preco']:.2f}€ |
-        ''')
+                st.balloons()
+                st.success(f"✅ Marcação #{marcacao_id} confirmada!")
+                st.markdown(f'''
+                | | |
+                |---|---|
+                | **Serviço** | {servico['nome']} |
+                | **Data** | {DIAS_SEMANA[data_escolhida.weekday()]}, {data_escolhida.strftime('%d/%m/%Y')} |
+                | **Hora** | {hora_escolhida} |
+                | **Preço** | {servico['preco']:.2f}€ |
+                ''')
 
-        mensagem = EMPRESA["mensagem_whatsapp"].format(
-            nome=nome_input.strip(), servico=servico["nome"],
-            data=data_escolhida.strftime('%d/%m/%Y'), hora=hora_escolhida,
-        )
-        link_wa = f"https://wa.me/{EMPRESA['contacto']['whatsapp']}?text={quote(mensagem)}"
-        st.markdown(f'[📱 Confirmar via WhatsApp]({link_wa})')
+                mensagem = EMPRESA["mensagem_whatsapp"].format(
+                    nome=nome_input.strip(), servico=servico["nome"],
+                    data=data_escolhida.strftime('%d/%m/%Y'), hora=hora_escolhida,
+                )
+                link_wa = f"https://wa.me/{EMPRESA['contacto']['whatsapp']}?text={quote(mensagem)}"
+                st.markdown(f'[📱 Confirmar via WhatsApp]({link_wa})')

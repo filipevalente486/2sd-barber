@@ -10,7 +10,7 @@ cores = EMPRESA["cores"]
 ouro = cores["secundaria"]
 
 # CSS global — força dourado no botão primary e no título
-st.markdown(f
+st.markdown(f"""
 <style>
     .titulo-hero {{
         font-size: 2rem;
@@ -47,11 +47,11 @@ st.markdown(f
         box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4) !important;
     }}
 </style>
-, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # Título e subtítulo com estilo inline (mais robusto que classes)
 st.markdown(
-    f'<div style="font-size:5rem; font-weight:bold; color:{ouro}; '
+    f'<div style="font-size:2.5rem; font-weight:bold; color:{ouro}; '
     f'text-align:center; margin-bottom:0.5rem; letter-spacing:1px;">2SD.Barber</div>',
     unsafe_allow_html=True,
 )

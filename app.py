@@ -5,6 +5,13 @@ sys.path.append(str(Path(__file__).resolve().parent))
 import streamlit as st
 from auth import esta_logado, fazer_logout, is_admin
 
+@st.cache_resource(show_spinner=False)
+def _init_db_once():
+    """Inicializa a BD uma única vez por processo, crucial para o Cloud."""
+    init_db()
+
+_init_db_once() # <-- Executa a função
+
 st.set_page_config(
     page_title="2SD.Barber",
     page_icon="✂️",

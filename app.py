@@ -12,6 +12,23 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed",
 )
+st.markdown("""
+<style>
+@media (max-width: 768px) {
+    .row-widget.stHorizontal {
+        flex-direction: column !important;
+    }
+    .row-widget.stHorizontal > div {
+        width: 100% !important;
+        margin-bottom: 1rem;
+    }
+    .stButton > button {
+        min-height: 3rem;
+        font-size: 16px !important;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
 
 st.markdown("""
 <style>

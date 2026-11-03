@@ -4,13 +4,7 @@ sys.path.append(str(Path(__file__).resolve().parent))
 
 import streamlit as st
 from auth import esta_logado, fazer_logout, is_admin
-
-@st.cache_resource(show_spinner=False)
-def _init_db_once():
-    """Inicializa a BD uma única vez por processo, crucial para o Cloud."""
-    init_db()
-
-_init_db_once() # <-- Executa a função
+from database import init_db
 
 st.set_page_config(
     page_title="2SD.Barber",
@@ -18,6 +12,19 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed",
 )
+
+
+# =========================================================
+# INICIALIZAR BD (necessário no Streamlit Cloud)
+# =========================================================
+@st.cache_resource(show_spinner=False)
+def _init_db_once():
+    """Inicializa a BD uma única vez por processo, crucial para o Cloud."""
+    init_db()
+
+
+_init_db_once()
+
 
 # =========================================================
 # DEFINIÇÃO DAS PÁGINAS
@@ -78,7 +85,6 @@ with st.sidebar:
 
     st.markdown("### ✂️ 2SD.Barber")
 
-    # Só as páginas visíveis (login fica de fora)
     for p in paginas:
         st.page_link(p, label=p.title)
 

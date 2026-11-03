@@ -13,7 +13,27 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-
+st.markdown("""
+<style>
+/* Aplica apenas a ecrãs de telemóvel (largura até 768px) */
+@media (max-width: 768px) {
+    /* Força as colunas horizontais a empilharem na vertical */
+    .row-widget.stHorizontal {
+        flex-direction: column !important;
+    }
+    /* Dá espaçamento entre as colunas empilhadas */
+    .row-widget.stHorizontal > div {
+        width: 100% !important;
+        margin-bottom: 1rem;
+    }
+    /* Aumenta a área de toque dos botões */
+    .stButton > button {
+        min-height: 3rem;
+        font-size: 16px !important;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
 # =========================================================
 # INICIALIZAR BD (necessário no Streamlit Cloud)
 # =========================================================

@@ -4,7 +4,17 @@ sys.path.append(str(Path(__file__).resolve().parent))
 
 import streamlit as st
 from auth import esta_logado, fazer_logout, is_admin
+import database  # Importa o módulo em vez de funções específicas
 from database import init_db
+
+# --- INÍCIO DO BLOCO DE AUTO-CORREÇÃO ---
+# Força o recarregamento do módulo 'database' se a função 'processar_referral' não for encontrada.
+# Isto resolve o problema de cache de módulos no Streamlit Cloud.
+if not hasattr(database, "processar_referral"):
+    import importlib
+    database = importlib.reload(database)
+    print("Módulo 'database' recarregado à força.")
+# --- FIM DO BLOCO DE AUTO-CORREÇÃO ---
 
 st.set_page_config(
     page_title="2SD.Barber",

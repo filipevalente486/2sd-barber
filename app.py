@@ -12,7 +12,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed",
 )
-st.markdown("""
+st.markdown(
 <style>
 @media (max-width: 768px) {
     .row-widget.stHorizontal {
@@ -28,7 +28,7 @@ st.markdown("""
     }
 }
 </style>
-""", unsafe_allow_html=True)
+, unsafe_allow_html=True)
 
 st.markdown("""
 <style>

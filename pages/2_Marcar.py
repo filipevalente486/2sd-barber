@@ -9,6 +9,7 @@ from config.empresa import EMPRESA, DIAS_SEMANA
 from database import (
     listar_servicos, gerar_slots_disponiveis,
     buscar_clientes_por_nome, criar_ou_atualizar_cliente, criar_marcacao,
+    processar_referral,
 )
 
 # Ler serviço pré-selecionado via URL (?servico=ID)
@@ -17,9 +18,19 @@ try:
     qp = st.query_params.get("servico")
     if qp:
         pre_servico_id = int(qp)
-        st.query_params.clear()
 except Exception:
     pre_servico_id = None
+
+# Ler código de convite via URL (?ref=CODIGO)
+pre_ref = None
+try:
+    qp_ref = st.query_params.get("ref")
+    if qp_ref:
+        pre_ref = str(qp_ref).upper().strip()
+        st.session_state["pending_ref"] = pre_ref
+except Exception:
+    pass
+
 
 st.title("✂️ Fazer marcação")
 
@@ -120,6 +131,14 @@ if st.button("✅ Confirmar marcação", use_container_width=True, type="primary
             st.error(e)
     else:
         cliente_id = criar_ou_atualizar_cliente(nome_input.strip(), telefone_input.strip())
+        ref_pendente = st.session_state.get("pending_ref")
+if ref_pendente:
+    if processar_referral(cliente_id, ref_pendente):
+        st.session_state.pop("pending_ref", None)
+        st.info(
+            "🎉 Código de convite aplicado! Quando esta marcação for concluída, "
+            "o teu amigo recebe 3 pontos na campanha **Traz o teu amigo**."
+        )
         marcacao_id = criar_marcacao(
             servico_id, cliente_id, data_str, hora_escolhida,
             int(servico["duracao_min"]),

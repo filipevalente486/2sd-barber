@@ -369,7 +369,8 @@ CONFIG_FID = EMPRESA.get("fidelizacao", {})
 PONTOS_POR_VISITA = CONFIG_FID.get("pontos_por_visita", 1)
 PONTOS_PARA_PREMIO = CONFIG_FID.get("pontos_para_premio", 5)
 DESCRICAO_PREMIO = CONFIG_FID.get("descricao_premio", "Prémio")
-
+PONTOS_REFERRAL = CONFIG_FID.get("pontos_por_referral", 3)
+DESCRICAO_REFERRAL = CONFIG_FID.get("descricao_referral", "Traz o teu amigo")
 
 def obter_pontos_cliente(cliente_id):
     with get_conn() as conn:
@@ -394,6 +395,62 @@ def adicionar_pontos(cliente_id, pontos, descricao, marcacao_id=None):
 
 
 def concluir_marcacao(marcacao_id):
+    _garantir_colunas_referral()
+    with get_conn() as conn:
+        row = conn.execute("""
+            SELECT m.cliente_id, s.preco FROM marcacoes m
+            LEFT JOIN servicos s ON s.id = m.servico_id
+            WHERE m.id = ? AND m.empresa_id = ? AND m.estado = 'pendente'
+        """, (int(marcacao_id), EMPRESA_ID)).fetchone()
+
+        if not row:
+            return None
+
+        cliente_id, preco = row
+        preco = preco or 0
+
+        conn.execute("UPDATE marcacoes SET estado = 'concluida' WHERE id = ? AND empresa_id = ?", (int(marcacao_id), EMPRESA_ID))
+        conn.execute(
+            "UPDATE clientes SET total_visitas = total_visitas + 1, total_gasto = total_gasto + ? WHERE id = ? AND empresa_id = ?",
+            (preco, cliente_id, EMPRESA_ID)
+        )
+
+        pontos = PONTOS_POR_VISITA
+        if pontos > 0:
+            conn.execute(
+                "INSERT INTO fidelizacao (empresa_id, cliente_id, marcacao_id, tipo, pontos, descricao, criado_em) VALUES (?, ?, ?, 'ganho', ?, ?, ?)",
+                (EMPRESA_ID, cliente_id, int(marcacao_id), pontos, f"Serviço concluído ({preco:.2f}€)", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            )
+            conn.execute("UPDATE clientes SET pontos = pontos + ? WHERE id = ?", (pontos, cliente_id))
+
+        # Campanha "Traz o teu amigo": recompensa quem convidou (uma vez por cliente)
+        referral_result = None
+        if PONTOS_REFERRAL > 0:
+            ref_row = conn.execute(
+                "SELECT referido_por, referral_recompensa_atribuida FROM clientes WHERE id = ?",
+                (cliente_id,)
+            ).fetchone()
+            if ref_row and ref_row[0] and not ref_row[1]:
+                referrer_id = ref_row[0]
+                conn.execute(
+                    "INSERT INTO fidelizacao (empresa_id, cliente_id, marcacao_id, tipo, pontos, descricao, criado_em) VALUES (?, ?, ?, 'ganho', ?, ?, ?)",
+                    (EMPRESA_ID, referrer_id, int(marcacao_id), PONTOS_REFERRAL, f"🎁 {DESCRICAO_REFERRAL}", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                )
+                conn.execute("UPDATE clientes SET pontos = pontos + ? WHERE id = ?", (PONTOS_REFERRAL, referrer_id))
+                conn.execute("UPDATE clientes SET referral_recompensa_atribuida = 1 WHERE id = ?", (cliente_id,))
+                referral_result = {"referrer_id": referrer_id, "pontos": PONTOS_REFERRAL}
+
+        conn.commit()
+        novo_saldo = conn.execute("SELECT pontos FROM clientes WHERE id = ?", (cliente_id,)).fetchone()[0]
+
+        return {
+            "cliente_id": cliente_id,
+            "pontos_ganhos": pontos,
+            "novo_saldo": novo_saldo,
+            "premio_disponivel": novo_saldo >= PONTOS_PARA_PREMIO,
+            "referral": referral_result,
+        }
+
     with get_conn() as conn:
         row = conn.execute("""
             SELECT m.cliente_id, s.preco FROM marcacoes m
@@ -554,4 +611,68 @@ def listar_marcacoes_por_data_com_lembrete(data_str):
             WHERE m.empresa_id = ? AND m.data = ?
             ORDER BY m.hora
         """, conn, params=(EMPRESA_ID, data_str))
+
+
+
+# =========================================================
+# CAMPANHA "TRAZ O TEU AMIGO"
+# =========================================================
+def _garantir_colunas_referral():
+    """Migração segura: adiciona colunas à tabela clientes se não existirem."""
+    with get_conn() as conn:
+        cols = [r[1] for r in conn.execute("PRAGMA table_info(clientes)").fetchall()]
+        if "referido_por" not in cols:
+            conn.execute("ALTER TABLE clientes ADD COLUMN referido_por INTEGER")
+        if "referral_recompensa_atribuida" not in cols:
+            conn.execute(
+                "ALTER TABLE clientes ADD COLUMN referral_recompensa_atribuida INTEGER DEFAULT 0"
+            )
+        conn.commit()
+
+
+def obter_codigo_referral(cliente_id):
+    """Código tipo REF0005 para o cliente."""
+    return f"REF{int(cliente_id):04d}"
+
+
+def obter_cliente_por_codigo_referral(codigo):
+    """Converte REF0005 → (id, nome, telefone). Devolve None se inválido."""
+    if not codigo:
+        return None
+    codigo = str(codigo).upper().strip()
+    if not codigo.startswith("REF"):
+        return None
+    try:
+        cid = int(codigo[3:])
+    except ValueError:
+        return None
+    with get_conn() as conn:
+        return conn.execute(
+            "SELECT id, nome, telefone FROM clientes WHERE id = ? AND empresa_id = ?",
+            (cid, EMPRESA_ID),
+        ).fetchone()
+
+
+def processar_referral(cliente_id, codigo_referral):
+    """Associa o novo cliente ao amigo que o convidou (se válido, único e não self)."""
+    _garantir_colunas_referral()
+    ref = obter_cliente_por_codigo_referral(codigo_referral)
+    if not ref:
+        return False
+    referrer_id = ref[0]
+    if referrer_id == int(cliente_id):
+        return False  # não pode convidar-se a si próprio
+    with get_conn() as conn:
+        atual = conn.execute(
+            "SELECT referido_por FROM clientes WHERE id = ? AND empresa_id = ?",
+            (int(cliente_id), EMPRESA_ID),
+        ).fetchone()
+        if not atual or atual[0] is not None:
+            return False  # já tem quem o convidou
+        conn.execute(
+            "UPDATE clientes SET referido_por = ? WHERE id = ? AND empresa_id = ?",
+            (referrer_id, int(cliente_id), EMPRESA_ID),
+        )
+        conn.commit()
+    return True
     

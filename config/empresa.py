@@ -63,15 +63,20 @@ EMPRESA = {
         "🕐 Hora: {hora}\n\n"
         "Até breve!"
     ),
+"fidelizacao": {
+    "ativa": True,
+    "modo": "visita",
+    "pontos_por_visita": 1,
+    "pontos_para_premio": 5,
+    "descricao_premio": "Corte simples grátis",
+    "servico_premio_id": 1,
+    "pontos_por_referral": 3,
+    "descricao_referral": "Traz o teu amigo",
+},
 
-    "fidelizacao": {
-        "ativa": True,
-        "modo": "visita",
-        "pontos_por_visita": 1,
-        "pontos_para_premio": 5,
-        "descricao_premio": "Corte simples grátis",
-        "servico_premio_id": 1,
-    },
+# NOVO — URL da app (atualizar se recriar a app)
+"app_url": "https://2sd-barber.streamlit.app",
+
 }
 
 DIAS_SEMANA = {

@@ -504,3 +504,54 @@ def remover_dia_bloqueado(data_str):
             (EMPRESA_ID, data_str),
         )
         conn.commit()
+
+
+# =========================================================
+# LEMBRETES
+# =========================================================
+def _garantir_coluna_lembrete():
+    """Adiciona a coluna lembrete_enviado se não existir (migração segura)."""
+    with get_conn() as conn:
+        cols = [r[1] for r in conn.execute("PRAGMA table_info(marcacoes)").fetchall()]
+        if "lembrete_enviado" not in cols:
+            conn.execute("ALTER TABLE marcacoes ADD COLUMN lembrete_enviado INTEGER DEFAULT 0")
+            conn.commit()
+
+
+def marcar_lembrete_enviado(marcacao_id):
+    _garantir_coluna_lembrete()
+    with get_conn() as conn:
+        conn.execute(
+            "UPDATE marcacoes SET lembrete_enviado = 1 WHERE id = ? AND empresa_id = ?",
+            (int(marcacao_id), EMPRESA_ID),
+        )
+        conn.commit()
+
+
+def desmarcar_lembrete_enviado(marcacao_id):
+    _garantir_coluna_lembrete()
+    with get_conn() as conn:
+        conn.execute(
+            "UPDATE marcacoes SET lembrete_enviado = 0 WHERE id = ? AND empresa_id = ?",
+            (int(marcacao_id), EMPRESA_ID),
+        )
+        conn.commit()
+
+
+def listar_marcacoes_por_data_com_lembrete(data_str):
+    """Como listar_marcacoes_por_data, mas inclui lembrete_enviado."""
+    _garantir_coluna_lembrete()
+    with get_conn() as conn:
+        return pd.read_sql_query("""
+            SELECT m.id, m.hora, m.duracao_min, m.estado, m.notas,
+                   COALESCE(m.lembrete_enviado, 0) AS lembrete_enviado,
+                   s.nome AS servico, s.preco,
+                   c.nome AS cliente, c.telefone, c.email,
+                   c.pontos AS cliente_pontos, m.cliente_id
+            FROM marcacoes m
+            LEFT JOIN servicos s ON s.id = m.servico_id
+            LEFT JOIN clientes c ON c.id = m.cliente_id
+            WHERE m.empresa_id = ? AND m.data = ?
+            ORDER BY m.hora
+        """, conn, params=(EMPRESA_ID, data_str))
+    

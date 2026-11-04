@@ -154,23 +154,5 @@ with st.sidebar:
         <p style="margin:0.3rem 0;">✉️ {contacto["email"]}</p>
     </div>
     ''', unsafe_allow_html=True)
-# =========================================================
-# CABEÇALHO COMUM (logo + Instagram) — aparece em todas as páginas
-# =========================================================
-if LOGO_PATH:
-    col_logo, col_insta = st.columns([3, 1])
-    with col_logo:
-        st.image(str(LOGO_PATH), width=80)
-    with col_insta:
-        insta = EMPRESA["contacto"]["instagram"].lstrip("@")
-        st.markdown(
-            f'<div style="text-align:right; padding-top:0.8rem;">'
-            f'<a href="https://instagram.com/{insta}" target="_blank" '
-            f'style="color:{EMPRESA["cores"]["secundaria"]}; '
-            f'text-decoration:none; font-size:0.95rem; font-weight:600;">'
-            f'📷 {EMPRESA["contacto"]["instagram"]}</a></div>',
-            unsafe_allow_html=True,
-        )
-    st.divider()
 
 pg.run()

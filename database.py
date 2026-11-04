@@ -776,4 +776,92 @@ def despesas_por_categoria(mes=None, ano=None):
             conn,
             params=(EMPRESA_ID,),
         )
+
+
+
+# =========================================================
+# FINANCEIRO (dashboard)
+# =========================================================
+def receita_mes(mes, ano):
+    """Soma dos preços das marcações concluídas no mês."""
+    with get_conn() as conn:
+        data_inicio = f"{ano:04d}-{mes:02d}-01"
+        if mes == 12:
+            data_fim = f"{ano + 1:04d}-01-01"
+        else:
+            data_fim = f"{ano:04d}-{mes + 1:02d}-01"
+        row = conn.execute("""
+            SELECT COALESCE(SUM(s.preco), 0)
+            FROM marcacoes m
+            LEFT JOIN servicos s ON s.id = m.servico_id
+            WHERE m.empresa_id = ? AND m.estado = 'concluida'
+              AND m.data >= ? AND m.data < ?
+        """, (EMPRESA_ID, data_inicio, data_fim)).fetchone()
+        return float(row[0]) if row else 0.0
+
+
+def receita_por_servico(mes, ano):
+    """Receita agrupada por serviço no mês."""
+    with get_conn() as conn:
+        data_inicio = f"{ano:04d}-{mes:02d}-01"
+        if mes == 12:
+            data_fim = f"{ano + 1:04d}-01-01"
+        else:
+            data_fim = f"{ano:04d}-{mes + 1:02d}-01"
+        return pd.read_sql_query("""
+            SELECT s.nome AS servico,
+                   COUNT(*) AS n,
+                   SUM(s.preco) AS receita
+            FROM marcacoes m
+            LEFT JOIN servicos s ON s.id = m.servico_id
+            WHERE m.empresa_id = ? AND m.estado = 'concluida'
+              AND m.data >= ? AND m.data < ?
+            GROUP BY s.nome
+            ORDER BY receita DESC
+        """, conn, params=(EMPRESA_ID, data_inicio, data_fim))
+
+
+def evolucao_mensal(ano, meses=6):
+    """Lista de dicts com {mes, ano, receita, despesas, lucro} para os últimos N meses."""
+    _garantir_tabela_despesas()
+    resultado = []
+    hoje = datetime.now()
+    for i in range(meses - 1, -1, -1):
+        m = hoje.month - i
+        a = hoje.year
+        while m <= 0:
+            m += 12
+            a -= 1
+        rec = receita_mes(m, a)
+        desp = total_despesas_mes(m, a)
+        resultado.append({
+            "mes": m,
+            "ano": a,
+            "receita": rec,
+            "despesas": desp,
+            "lucro": rec - desp,
+        })
+    return resultado
+
+
+def contar_marcacoes_mes(mes, ano, estado=None):
+    with get_conn() as conn:
+        data_inicio = f"{ano:04d}-{mes:02d}-01"
+        if mes == 12:
+            data_fim = f"{ano + 1:04d}-01-01"
+        else:
+            data_fim = f"{ano:04d}-{mes + 1:02d}-01"
+        if estado:
+            row = conn.execute(
+                "SELECT COUNT(*) FROM marcacoes WHERE empresa_id = ? "
+                "AND estado = ? AND data >= ? AND data < ?",
+                (EMPRESA_ID, estado, data_inicio, data_fim),
+            ).fetchone()
+        else:
+            row = conn.execute(
+                "SELECT COUNT(*) FROM marcacoes WHERE empresa_id = ? "
+                "AND data >= ? AND data < ?",
+                (EMPRESA_ID, data_inicio, data_fim),
+            ).fetchone()
+        return int(row[0]) if row else 0
     

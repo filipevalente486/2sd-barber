@@ -1,7 +1,7 @@
 ﻿import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
-
+from components.header import render_header
 import streamlit as st
 from datetime import date, timedelta
 from urllib.parse import quote

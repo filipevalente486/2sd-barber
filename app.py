@@ -6,6 +6,7 @@ import streamlit as st
 from auth import esta_logado, fazer_logout, is_admin
 import database  # Importa o módulo em vez de funções específicas
 from database import init_db
+from config.empresa import EMPRESA
 
 # --- INÍCIO DO BLOCO DE AUTO-CORREÇÃO ---
 # Força o recarregamento do módulo 'database' se a função 'processar_referral' não for encontrada.
@@ -147,5 +148,19 @@ with st.sidebar:
     else:
         if st.button("🔐 Área reservada", use_container_width=True):
             st.switch_page(login_page)
+    st.divider()
+    contacto = EMPRESA["contacto"]
+    st.markdown(f'''
+    <div style="text-align:center; font-size:0.85rem; color:#888;">
+        <p style="margin:0.3rem 0;">📞 {contacto["telefone"]}</p>
+        <p style="margin:0.3rem 0;">
+            <a href="https://instagram.com/{contacto["instagram"].lstrip("@")}" 
+               target="_blank" style="color:#D4AF37; text-decoration:none;">
+               📷 {contacto["instagram"]}
+            </a>
+        </p>
+        <p style="margin:0.3rem 0;">✉️ {contacto["email"]}</p>
+    </div>
+    ''', unsafe_allow_html=True)
 
 pg.run()

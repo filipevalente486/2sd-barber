@@ -67,7 +67,7 @@
 
 ## 🎯 Próximos passos (após testes)
 
-- [ ] Corrigir bugs críticos
+- [🍕] Corrigir bugs críticos
 - [ ] Implementar sugestões prioritárias
 - [ ] Migrar para VPS com domínio próprio
 - [ ] Adicionar gestão de despesas

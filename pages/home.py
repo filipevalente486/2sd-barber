@@ -69,6 +69,17 @@ col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
     if st.button("✂️ Fazer marcação", use_container_width=True, type="primary"):
         st.switch_page("pages/2_Marcar.py")
+        
+    # Link Instagram por baixo do botão
+    insta = EMPRESA["contacto"]["instagram"].lstrip("@")
+    st.markdown(
+        f'<div style="text-align:center; margin-top:0.8rem;">'
+        f'<a href="https://instagram.com/{insta}" target="_blank" '
+        f'style="color:{cores["secundaria"]}; text-decoration:none; '
+        f'font-size:0.95rem; font-weight:600;">'
+        f'📷 {EMPRESA["contacto"]["instagram"]}</a></div>',
+        unsafe_allow_html=True,
+    )
 
 st.markdown('<br>', unsafe_allow_html=True)
 

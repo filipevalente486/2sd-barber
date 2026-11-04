@@ -675,4 +675,105 @@ def processar_referral(cliente_id, codigo_referral):
         )
         conn.commit()
     return True
+
+
+
+# =========================================================
+# DESPESAS
+# =========================================================
+def _garantir_tabela_despesas():
+    """Cria a tabela de despesas se não existir."""
+    with get_conn() as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS despesas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                empresa_id INTEGER NOT NULL,
+                data TEXT NOT NULL,
+                categoria TEXT NOT NULL,
+                descricao TEXT,
+                valor REAL NOT NULL,
+                criado_em TEXT NOT NULL,
+                FOREIGN KEY (empresa_id) REFERENCES empresas(id)
+            )
+        """)
+        conn.commit()
+
+
+def criar_despesa(data_str, categoria, descricao, valor):
+    _garantir_tabela_despesas()
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO despesas (empresa_id, data, categoria, descricao, valor, criado_em) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (EMPRESA_ID, data_str, categoria, descricao, float(valor),
+             datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+        )
+        conn.commit()
+
+
+def listar_despesas(mes=None, ano=None):
+    """Lista despesas. Se mes/ano forem dados, filtra por esse mês."""
+    _garantir_tabela_despesas()
+    with get_conn() as conn:
+        if mes and ano:
+            data_inicio = f"{ano:04d}-{mes:02d}-01"
+            if mes == 12:
+                data_fim = f"{ano + 1:04d}-01-01"
+            else:
+                data_fim = f"{ano:04d}-{mes + 1:02d}-01"
+            return pd.read_sql_query(
+                "SELECT id, data, categoria, descricao, valor "
+                "FROM despesas WHERE empresa_id = ? AND data >= ? AND data < ? "
+                "ORDER BY data DESC, id DESC",
+                conn,
+                params=(EMPRESA_ID, data_inicio, data_fim),
+            )
+        return pd.read_sql_query(
+            "SELECT id, data, categoria, descricao, valor "
+            "FROM despesas WHERE empresa_id = ? ORDER BY data DESC, id DESC",
+            conn,
+            params=(EMPRESA_ID,),
+        )
+
+
+def remover_despesa(despesa_id):
+    _garantir_tabela_despesas()
+    with get_conn() as conn:
+        conn.execute(
+            "DELETE FROM despesas WHERE id = ? AND empresa_id = ?",
+            (int(despesa_id), EMPRESA_ID),
+        )
+        conn.commit()
+
+
+def total_despesas_mes(mes, ano):
+    _garantir_tabela_despesas()
+    df = listar_despesas(mes=mes, ano=ano)
+    return float(df["valor"].sum()) if not df.empty else 0.0
+
+
+def despesas_por_categoria(mes=None, ano=None):
+    """Agrega despesas por categoria (para dashboard)."""
+    _garantir_tabela_despesas()
+    with get_conn() as conn:
+        if mes and ano:
+            data_inicio = f"{ano:04d}-{mes:02d}-01"
+            if mes == 12:
+                data_fim = f"{ano + 1:04d}-01-01"
+            else:
+                data_fim = f"{ano:04d}-{mes + 1:02d}-01"
+            return pd.read_sql_query(
+                "SELECT categoria, SUM(valor) AS total, COUNT(*) AS n "
+                "FROM despesas WHERE empresa_id = ? AND data >= ? AND data < ? "
+                "GROUP BY categoria ORDER BY total DESC",
+                conn,
+                params=(EMPRESA_ID, data_inicio, data_fim),
+            )
+        return pd.read_sql_query(
+            "SELECT categoria, SUM(valor) AS total, COUNT(*) AS n "
+            "FROM despesas WHERE empresa_id = ? "
+            "GROUP BY categoria ORDER BY total DESC",
+            conn,
+            params=(EMPRESA_ID,),
+        )
     

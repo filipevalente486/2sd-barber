@@ -77,7 +77,19 @@ EMPRESA = {
 # NOVO — URL da app (atualizar se recriar a app)
 "app_url": "https://2sd-barber.streamlit.app",
 
+"categorias_despesa": [
+        "🏠 Renda",
+        "💡 Eletricidade / Água",
+        "✂️ Material (lâminas, produtos)",
+        "📱 Comunicações",
+        "💰 Salários",
+        "📊 Contabilidade",
+        "🔧 Manutenção",
+        "📦 Outros",
+    ],
+
 }
+
 
 DIAS_SEMANA = {
     0: "Segunda",

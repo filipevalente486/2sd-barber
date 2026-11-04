@@ -87,6 +87,7 @@ if esta_logado() and is_admin():
         st.Page("pages/13_Admin_Clientes.py", title="👥 Clientes"),
         st.Page("pages/14_Admin_Horarios.py", title="🕐 Horários"),
         st.Page("pages/15_Admin_Lembretes.py", title="📨 Lembretes"),
+        st.Page("pages/16_Admin_Despesas.py", title="💸 Despesas"),
     ]
 
     todas_paginas = paginas

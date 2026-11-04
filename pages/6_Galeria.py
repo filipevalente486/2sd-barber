@@ -3,9 +3,9 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import streamlit as st
+from components.header import render_header
 
-st.title("📸 Galeria")
-st.caption("Alguns dos nossos trabalhos")
+render_header("📸 Galeria", "Alguns dos nossos trabalhos")
 
 GALERIA_DIR = Path(__file__).resolve().parent.parent / "assets" / "galeria"
 IMG_EXT = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
@@ -40,7 +40,7 @@ if not arquivos:
     st.info("Sem ficheiros para o filtro escolhido.")
     st.stop()
 
-COLS = 3
+COLS = 2
 cols = st.columns(COLS, gap="medium")
 for i, f in enumerate(arquivos):
     with cols[i % COLS]:

@@ -3,9 +3,9 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import streamlit as st
-import streamlit.components.v1 as components
 from urllib.parse import quote
 from config.empresa import EMPRESA, DIAS_SEMANA
+from components.header import render_header
 
 cores = EMPRESA["cores"]
 contacto = EMPRESA["contacto"]
@@ -14,19 +14,6 @@ horario = EMPRESA["horario_funcionamento"]
 
 st.markdown(f"""
 <style>
-    .local-hero {{
-        text-align: center;
-        padding: 0.5rem 0 2rem 0;
-    }}
-    .local-hero h1 {{
-        color: {cores["secundaria"]};
-        font-size: 2.4rem;
-        margin-bottom: 0.3rem;
-    }}
-    .local-hero p {{
-        color: {cores["texto_secundario"]};
-        font-size: 1rem;
-    }}
     .info-card {{
         background: {cores["fundo"]};
         border: 1px solid #2a2a2a;
@@ -104,16 +91,10 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("""
-<div class="local-hero">
-    <h1>📍 Onde estamos</h1>
-    <p>Venha visitar-nos</p>
-</div>
-""", unsafe_allow_html=True)
+render_header("📍 Onde estamos", "Venha visitar-nos")
 
 col_esq, col_dir = st.columns([1, 1.3], gap="large")
 
-# ----- Coluna esquerda: informação -----
 with col_esq:
     morada_completa = f"{morada['rua']}<br>{morada['codigo_postal']} {morada['cidade']}"
     st.markdown(f"""
@@ -139,18 +120,14 @@ with col_esq:
     </div>
     """, unsafe_allow_html=True)
 
-    notas = EMPRESA.get("notas_horario", {})
     linhas = []
     for dia_num in range(7):
         nome = DIAS_SEMANA[dia_num]
         h = horario.get(dia_num)
-        nota = notas.get(dia_num)
         if h is None:
-            texto = nota if nota else "Fechado"
-            linhas.append(f'<div class="horario-linha"><span class="horario-dia">{nome}</span><span class="horario-fechado">{texto}</span></div>')
+            linhas.append(f'<div class="horario-linha"><span class="horario-dia">{nome}</span><span class="horario-fechado">Fechado</span></div>')
         else:
             linhas.append(f'<div class="horario-linha"><span class="horario-dia">{nome}</span><span>{h[0]} – {h[1]}</span></div>')
-
     st.markdown(f"""
     <div class="info-card">
         <h3>🕐 Horário</h3>
@@ -158,7 +135,6 @@ with col_esq:
     </div>
     """, unsafe_allow_html=True)
 
-# ----- Coluna direita: mapa -----
 with col_dir:
     st.markdown("""
     <div class="info-card" style="border-left-color:#2a2a2a;">
@@ -168,7 +144,7 @@ with col_dir:
     endereco_query = quote(f"{morada['rua']}, {morada['codigo_postal']} {morada['cidade']}")
     maps_embed = f"https://maps.google.com/maps?q={endereco_query}&t=&z=15&ie=UTF8&iwloc=&output=embed"
 
-    components.html(
+    st.iframe(
         f'<iframe src="{maps_embed}" width="100%" height="420" '
         f'style="border:0; border-radius:8px;" allowfullscreen="" loading="lazy" '
         f'referrerpolicy="no-referrer-when-downgrade"></iframe>',

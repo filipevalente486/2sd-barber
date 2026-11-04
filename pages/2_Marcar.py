@@ -32,7 +32,7 @@ except Exception:
     pass
 
 
-st.title("✂️ Fazer marcação")
+render_header("✂️ Fazer marcação", "Escolha o serviço, dia e hora")
 
 servicos = listar_servicos()
 if servicos.empty:

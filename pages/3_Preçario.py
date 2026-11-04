@@ -5,24 +5,12 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 import streamlit as st
 from config.empresa import EMPRESA
 from database import listar_servicos
+from components.header import render_header
 
 cores = EMPRESA["cores"]
 
 st.markdown(f"""
 <style>
-    .preco-hero {{
-        text-align: center;
-        padding: 0.5rem 0 1.5rem 0;
-    }}
-    .preco-hero h1 {{
-        color: {cores["secundaria"]};
-        font-size: 2.4rem;
-        margin-bottom: 0.2rem;
-    }}
-    .preco-hero p {{
-        color: {cores["texto_secundario"]};
-        font-size: 1rem;
-    }}
     .card-link {{
         text-decoration: none !important;
         display: block;
@@ -92,12 +80,7 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("""
-<div class="preco-hero">
-    <h1>💰 Preçário</h1>
-    <p>Clique num serviço para marcar diretamente</p>
-</div>
-""", unsafe_allow_html=True)
+render_header("💰 Preçário", "Clique num serviço para marcar diretamente")
 
 servicos = listar_servicos()
 if servicos.empty:

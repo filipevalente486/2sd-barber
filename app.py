@@ -125,10 +125,6 @@ LOGO_PATH = _encontrar_logo()
 # SIDEBAR
 # =========================================================
 with st.sidebar:
-    if LOGO_PATH:
-        st.image(str(LOGO_PATH), width=140)
-        st.divider()
-
     st.markdown("### ✂️ 2SD.Barber")
 
     for p in paginas:

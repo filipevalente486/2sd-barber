@@ -23,9 +23,14 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed",
 )
-st.markdown('''
+st.markdown("""
 <style>
 @media (max-width: 768px) {
+    /* ===== Esconder logo da sidebar no mobile ===== */
+    section[data-testid="stSidebar"] div[data-testid="stImage"] {
+        display: none !important;
+    }
+    /* ===== Colunas empilham ===== */
     .row-widget.stHorizontal {
         flex-direction: column !important;
     }
@@ -33,35 +38,23 @@ st.markdown('''
         width: 100% !important;
         margin-bottom: 1rem;
     }
+    /* ===== Botões maiores ===== */
     .stButton > button {
         min-height: 3rem;
         font-size: 16px !important;
     }
-}
-</style>
-''', unsafe_allow_html=True)
-
-st.markdown("""
-<style>
-/* Aplica apenas a ecrãs de telemóvel (largura até 768px) */
-@media (max-width: 768px) {
-    /* Força as colunas horizontais a empilharem na vertical */
-    .row-widget.stHorizontal {
-        flex-direction: column !important;
-    }
-    /* Dá espaçamento entre as colunas empilhadas */
-    .row-widget.stHorizontal > div {
-        width: 100% !important;
-        margin-bottom: 1rem;
-    }
-    /* Aumenta a área de toque dos botões */
-    .stButton > button {
-        min-height: 3rem;
+    /* ===== Títulos ===== */
+    h1 { font-size: 1.8rem !important; }
+    h2 { font-size: 1.4rem !important; }
+    h3 { font-size: 1.15rem !important; }
+    /* ===== Formulários (evita zoom no iPhone) ===== */
+    input, select, textarea {
         font-size: 16px !important;
     }
 }
 </style>
 """, unsafe_allow_html=True)
+
 # =========================================================
 # INICIALIZAR BD (necessário no Streamlit Cloud)
 # =========================================================
@@ -165,5 +158,23 @@ with st.sidebar:
         <p style="margin:0.3rem 0;">✉️ {contacto["email"]}</p>
     </div>
     ''', unsafe_allow_html=True)
+# =========================================================
+# CABEÇALHO COMUM (logo + Instagram) — aparece em todas as páginas
+# =========================================================
+if LOGO_PATH:
+    col_logo, col_insta = st.columns([3, 1])
+    with col_logo:
+        st.image(str(LOGO_PATH), width=80)
+    with col_insta:
+        insta = EMPRESA["contacto"]["instagram"].lstrip("@")
+        st.markdown(
+            f'<div style="text-align:right; padding-top:0.8rem;">'
+            f'<a href="https://instagram.com/{insta}" target="_blank" '
+            f'style="color:{EMPRESA["cores"]["secundaria"]}; '
+            f'text-decoration:none; font-size:0.95rem; font-weight:600;">'
+            f'📷 {EMPRESA["contacto"]["instagram"]}</a></div>',
+            unsafe_allow_html=True,
+        )
+    st.divider()
 
 pg.run()

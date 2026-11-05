@@ -93,7 +93,7 @@ with c2:
     st.write(EMPRESA['morada']['rua'])
     st.write(f"{EMPRESA['morada']['codigo_postal']} {EMPRESA['morada']['cidade']}")
 with c3:
-    st.markdown('### 🎁 Fidelização')
+    st.markdown('### 🎁 Prémio')
     st.write("1 corte = 1 ponto")
     st.write("5 pontos = **corte grátis**")
     if st.button("Ver os meus pontos", use_container_width=True):

@@ -95,7 +95,7 @@ with c2:
 with c3:
     st.markdown('### 🎁 Prémio')
     st.write("1 corte = 1 ponto")
-    st.write("5 pontos = **corte grátis**")
+    st.write("10 pontos = **corte grátis**")
     if st.button("Ver os meus pontos", use_container_width=True):
         st.switch_page("pages/5_Consultar_Pontos.py")
 

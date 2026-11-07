@@ -67,7 +67,7 @@ EMPRESA = {
     "ativa": True,
     "modo": "visita",
     "pontos_por_visita": 1,
-    "pontos_para_premio": 5,
+    "pontos_para_premio": 10,
     "descricao_premio": "Corte simples grátis",
     "servico_premio_id": 1,
     "pontos_por_referral": 3,
